@@ -35,6 +35,9 @@ public class User {
     @Column(nullable = false)
     private Integer dni;
 
+    @Column(nullable = false)
+    private boolean enabled;
+
  
 
 }
