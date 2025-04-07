@@ -23,11 +23,11 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests((authorize) -> authorize
                 .requestMatchers("/auth/register", "/auth/login").permitAll() // Permitir acceso sin autenticación a registro y login
-                .requestMatchers("/test").permitAll() // También permitimos /test para pruebas
-                .anyRequest().authenticated() // Cualquier otra solicitud requiere autenticación
+                .requestMatchers("/test").permitAll()
+                .anyRequest().authenticated()
             )
-            .csrf((csrf) -> csrf.disable()) // Deshabilitar CSRF para pruebas de API (¡cuidado en producción!)
-            .httpBasic(withDefaults()); // Usar HTTP Basic para la autenticación (puedes cambiarlo a JWT, etc.)
+            .csrf((csrf) -> csrf.disable())
+            .httpBasic(withDefaults());
         return http.build();
     }
 }

@@ -11,7 +11,7 @@ import lombok.Data;
 
 @Entity
 @Table(name = "users")
-@Data // Lombok annotation to generate getters, setters, equals, hashCode, toString
+@Data
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

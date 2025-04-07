@@ -8,7 +8,6 @@ public class RegisterRequest {
     private String phoneNumber;
     private Integer dni;
 
-    // Getters y setters para todos los campos
     public String getEmail() {
         return email;
     }
