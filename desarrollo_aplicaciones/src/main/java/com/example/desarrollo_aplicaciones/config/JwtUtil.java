@@ -11,18 +11,27 @@ import com.auth0.jwt.algorithms.Algorithm;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret}") // Define esta propiedad en application.properties o application.yml
+    @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.expiration}") // Define la duración en milisegundos
+    @Value("${jwt.expiration}") 
     private long expirationTime;
 
-    public String generateToken(String email) {
+    public String generateToken(String subject) {
         Algorithm algorithm = Algorithm.HMAC256(secret);
         return JWT.create()
-                .withSubject(email)
+                .withSubject(subject)
                 .withIssuedAt(new Date())
                 .withExpiresAt(new Date(System.currentTimeMillis() + expirationTime))
+                .sign(algorithm);
+    }
+
+    public String generateToken(String subject, long duration) {
+        Algorithm algorithm = Algorithm.HMAC256(secret);
+        return JWT.create()
+                .withSubject(subject)
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date(System.currentTimeMillis() + duration))
                 .sign(algorithm);
     }
 
