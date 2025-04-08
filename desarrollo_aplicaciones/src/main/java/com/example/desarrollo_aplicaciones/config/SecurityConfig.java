@@ -22,8 +22,8 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests((authorize) -> authorize
-                .requestMatchers("/auth/register", "/auth/login", "/auth/recover", "/auth/reset-password").permitAll() // Permitir acceso sin autenticación a estos endpoints
-                .requestMatchers("/test").permitAll()
+                .requestMatchers("/auth/register", "/auth/login", "/auth/recover", "/auth/reset-password","/auth/verify").permitAll() // Permitir acceso sin autenticación a estos endpoints
+                .requestMatchers("auth/test").permitAll()
                 .anyRequest().authenticated()
             )
             .csrf((csrf) -> csrf.disable())
