@@ -3,7 +3,9 @@ package com.example.desarrollo_aplicaciones.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired; // Import para la excepción
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -19,6 +21,8 @@ import jakarta.transaction.Transactional;
 
 @Service
 public class PasswordRecoveryService {
+
+    private static final Logger logger = LoggerFactory.getLogger(PasswordRecoveryService.class); // Inicialización del logger
 
     @Autowired
     private UserRepository userRepository;
@@ -41,35 +45,47 @@ public class PasswordRecoveryService {
     @Transactional
     public boolean sendRecoveryEmail(String email) {
         Optional<User> userOptional = userRepository.findByEmail(email);
-
+    
         if (userOptional.isPresent()) {
             User user = userOptional.get();
-
-            String token = jwtUtil.generateToken(user.getEmail(), resetExpirationTime);
-
-            LocalDateTime expiration = LocalDateTime.now().plusMinutes(3);
-            PasswordResetToken resetToken = new PasswordResetToken();
-            resetToken.setToken(token);
-            resetToken.setExpirationDate(expiration);
-            resetToken.setUser(user);
-            tokenRepository.save(resetToken);
-
-            String resetLink = resetUrlBase + token;
-
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(user.getEmail());
-            message.setSubject("Recuperación de contraseña");
-            message.setText("Hola " + user.getName() + ",\n\n" +
-                    "Para restablecer tu contraseña, hacé clic en el siguiente enlace:\n" +
-                    resetLink + "\n\n" +
-                    "Este enlace expirará en " + resetExpirationTime / 60000 + " minutos.\n\n" +
-                    "Si no solicitaste esto, ignorá este mensaje.");
-
-            mailSender.send(message);
-
-            return true;
+            String newToken = jwtUtil.generateToken(user.getEmail(), resetExpirationTime);
+            LocalDateTime newExpiration = LocalDateTime.now().plusMinutes(3);
+    
+            Optional<PasswordResetToken> existingTokenOptional = tokenRepository.findByUser(user);
+            PasswordResetToken resetToken;
+    
+            if (existingTokenOptional.isPresent()) {
+                resetToken = existingTokenOptional.get();
+                logger.info("Actualizando token existente para el usuario {}: {}", user.getId(), resetToken.getToken());
+                resetToken.setToken(newToken);
+                resetToken.setExpirationDate(newExpiration);
+            } else {
+                resetToken = new PasswordResetToken();
+                resetToken.setToken(newToken);
+                resetToken.setExpirationDate(newExpiration);
+                resetToken.setUser(user);
+                logger.info("Creando nuevo token para el usuario {}: {}", user.getId(), newToken);
+            }
+    
+            try {
+                tokenRepository.save(resetToken);
+    
+                String resetLink = resetUrlBase + newToken; // Usar newToken aquí
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setTo(user.getEmail());
+                message.setSubject("Recuperación de contraseña");
+                message.setText("Hola " + user.getName() + ",\n\n" +
+                        "Para restablecer tu contraseña, hacé clic en el siguiente enlace:\n" +
+                        resetLink + "\n\n" +
+                        "Este enlace expirará en " + resetExpirationTime / 60000 + " minutos.\n\n" +
+                        "Si no solicitaste esto, ignorá este mensaje.");
+                mailSender.send(message);
+                return true;
+            } catch (Exception e) {
+                logger.error("Error al guardar/actualizar el token para el usuario {}: {}", user.getId(), e.getMessage(), e);
+                return false;
+            }
         }
-
         return false;
     }
 
@@ -84,5 +100,4 @@ public class PasswordRecoveryService {
         }
         return Optional.empty();
     }
-
 }

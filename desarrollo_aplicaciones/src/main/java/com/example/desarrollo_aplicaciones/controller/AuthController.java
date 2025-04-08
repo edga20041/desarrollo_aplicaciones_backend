@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +34,8 @@ import com.example.desarrollo_aplicaciones.service.PasswordRecoveryService;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = "http://localhost:8000") 
+
 public class AuthController {
 
     @Autowired
@@ -130,23 +133,23 @@ public class AuthController {
     @PostMapping("/reset-password")
     public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
         Optional<PasswordResetToken> tokenOptional = passwordResetTokenRepository.findByToken(request.getToken());
-
+    
         if (tokenOptional.isPresent()) {
             PasswordResetToken token = tokenOptional.get();
-
+    
             if (token.getExpirationDate().isBefore(java.time.LocalDateTime.now())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Token expirado.");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Token expirado."));
             }
-
+    
             User user = token.getUser();
             user.setPassword(passwordEncoder.encode(request.getNewPassword()));
             userRepository.save(user);
-
+    
             passwordResetTokenRepository.delete(token);
-
-            return ResponseEntity.ok("Contraseña restablecida correctamente.");
+    
+            return ResponseEntity.ok(Map.of("message", "Contraseña restablecida correctamente."));
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Token inválido.");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Token inválido."));
         }
     }
 
