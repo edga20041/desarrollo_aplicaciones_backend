@@ -35,7 +35,7 @@ public class PasswordRecoveryService {
     @Value("${app.frontend.reset-url:http://localhost:4200/reset-password?token=}")
     private String resetUrlBase;
 
-    @Value("${jwt.reset-expiration:1800000}") 
+    @Value("${jwt.reset-expiration:1800000}")
     private long resetExpirationTime;
 
     @Transactional
@@ -45,9 +45,9 @@ public class PasswordRecoveryService {
         if (userOptional.isPresent()) {
             User user = userOptional.get();
 
-            String token = jwtUtil.generateToken(user.getEmail(), resetExpirationTime); 
+            String token = jwtUtil.generateToken(user.getEmail(), resetExpirationTime);
 
-            LocalDateTime expiration = LocalDateTime.now().plusMinutes(30);
+            LocalDateTime expiration = LocalDateTime.now().plusMinutes(3);
             PasswordResetToken resetToken = new PasswordResetToken();
             resetToken.setToken(token);
             resetToken.setExpirationDate(expiration);
@@ -85,7 +85,4 @@ public class PasswordRecoveryService {
         return Optional.empty();
     }
 
-    public void deleteToken(String token) {
-        tokenRepository.findByToken(token).ifPresent(tokenRepository::delete);
-    }
 }

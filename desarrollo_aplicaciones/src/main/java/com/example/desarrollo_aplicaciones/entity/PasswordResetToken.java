@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 
 @Entity
 public class PasswordResetToken {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
