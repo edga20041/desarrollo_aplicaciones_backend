@@ -102,7 +102,7 @@ public class AuthController {
         verificationTokenRepository.save(verificationToken);
 
         // Enviar correo de verificación
-        String verificationLink = "http://localhost:8080/auth/verify?token=" + token;
+        String verificationLink = "http://localhost:8081/auth/verify?token=" + token;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(newUser.getEmail());
         message.setSubject("Verificación de correo electrónico");
