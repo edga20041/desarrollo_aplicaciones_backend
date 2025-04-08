@@ -17,7 +17,7 @@ public class VerificationToken {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String token;
+    private String code;
 
     private LocalDateTime expirationDate;
 

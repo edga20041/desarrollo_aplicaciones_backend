@@ -3,7 +3,6 @@ package com.example.desarrollo_aplicaciones.controller;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.desarrollo_aplicaciones.api.model.AuthResponse;
@@ -97,26 +95,24 @@ public class AuthController {
         userRepository.save(newUser);
 
         // Generar token de verificación
-        String token = UUID.randomUUID().toString();
+        String code = String.format("%06d", (int)(Math.random() * 1000000));
         VerificationToken verificationToken = new VerificationToken();
-        verificationToken.setToken(token);
-        verificationToken.setExpirationDate(LocalDateTime.now().plusHours(24)); // Expira en 24 horas
+        verificationToken.setCode(code);
+        verificationToken.setExpirationDate(LocalDateTime.now().plusMinutes(10));
         verificationToken.setUser(newUser);
         verificationTokenRepository.save(verificationToken);
 
         // Enviar correo de verificación
-        String verificationLink = "http://localhost:8081/auth/verify?token=" + token;
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(newUser.getEmail());
-        message.setSubject("Verificación de correo electrónico");
+        message.setSubject("Código de verificación");
         message.setText("Hola " + newUser.getName() + ",\n\n" +
-                "Por favor, verifica tu correo electrónico haciendo clic en el siguiente enlace:\n" +
-                verificationLink + "\n\n" +
-                "Este enlace expirará en 24 horas.\n\n" +
-                "Gracias.");
+            "Tu código de verificación es: " + code + "\n\n" +
+            "Este código expirará en 10 minutos.\n\n" +
+            "Gracias.");
         mailSender.send(message);
 
-    return ResponseEntity.ok("Registro iniciado. Por favor, verifica tu correo electrónico.");
+    return ResponseEntity.ok("Registro iniciado. Código enviado al correo.");
     }
 
     @PostMapping("/recover")
@@ -158,33 +154,84 @@ public class AuthController {
         return "Servidor funcionando!";
     }
 
-    @GetMapping("/verify")
-    public ResponseEntity<AuthResponse> verifyEmail(@RequestParam("token") String token) {
-        Optional<VerificationToken> tokenOptional = verificationTokenRepository.findByToken(token);
+    @PostMapping("/verify")
+    public ResponseEntity<AuthResponse> verifyEmail(@RequestBody Map<String, String> body) {
+        String code = body.get("code");
+    
+        Optional<VerificationToken> tokenOptional = verificationTokenRepository.findByCode(code);
     
         if (tokenOptional.isPresent()) {
             VerificationToken verificationToken = tokenOptional.get();
     
-            // Verificar si el token ha expirado
+            // Chequear si el código expiró
             if (verificationToken.getExpirationDate().isBefore(LocalDateTime.now())) {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                     .body(null); // Podés mandar un mensaje si querés
             }
     
-            // Activar el usuario
+            // Activar usuario
             User user = verificationToken.getUser();
             user.setEnabled(true);
             userRepository.save(user);
     
-            // Eliminar el token de verificación
+            // Borrar el token para que no se use dos veces
             verificationTokenRepository.delete(verificationToken);
     
-            // Generar AuthResponse
-            String jwtToken = jwtUtil.generateToken(user.getEmail());
-            AuthResponse authResponse = new AuthResponse(jwtToken, user.getId(), user.getName());
+            // Generar JWT
+            String jwt = jwtUtil.generateToken(user.getEmail());
+            AuthResponse authResponse = new AuthResponse(jwt, user.getId(), user.getName());
     
-            return new ResponseEntity<>(authResponse, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            return ResponseEntity.ok(authResponse);
         }
+    
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     }
+
+
+    @PostMapping("/resend-code")
+public ResponseEntity<?> resendVerificationCode(@RequestBody Map<String, String> body) {
+    String email = body.get("email");
+
+    Optional<User> userOptional = userRepository.findByEmail(email);
+
+    if (userOptional.isEmpty()) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
+    }
+
+    User user = userOptional.get();
+
+    if (user.isEnabled()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El usuario ya está verificado.");
+    }
+
+    // Buscar token existente o crear uno nuevo
+    Optional<VerificationToken> tokenOptional = verificationTokenRepository.findByUser(user);
+    VerificationToken verificationToken;
+
+    if (tokenOptional.isPresent()) {
+        verificationToken = tokenOptional.get();
+    } else {
+        verificationToken = new VerificationToken();
+        verificationToken.setUser(user);
+    }
+
+    // Generar nuevo código
+    String code = String.format("%06d", (int)(Math.random() * 1000000));
+    verificationToken.setCode(code);
+    verificationToken.setExpirationDate(LocalDateTime.now().plusMinutes(10));
+
+    verificationTokenRepository.save(verificationToken);
+
+    // Reenviar correo
+    SimpleMailMessage message = new SimpleMailMessage();
+    message.setTo(user.getEmail());
+    message.setSubject("Reenvío de código de verificación");
+    message.setText("Hola " + user.getName() + ",\n\n" +
+            "Tu nuevo código de verificación es: " + code + "\n\n" +
+            "Este código expirará en 10 minutos.\n\n" +
+            "Gracias.");
+    mailSender.send(message);
+
+    return ResponseEntity.ok("Código reenviado con éxito.");
+}
 }
