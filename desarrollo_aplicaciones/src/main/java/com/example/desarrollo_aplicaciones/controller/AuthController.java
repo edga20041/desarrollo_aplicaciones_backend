@@ -151,7 +151,7 @@ public class AuthController {
         return "Servidor funcionando!";
     }
 
-    @GetMapping("/verify")
+    @PostMapping("/verify")
     public ResponseEntity<AuthResponse> verifyEmail(@RequestBody Map<String, String> body) {
         String code = body.get("code");
     
