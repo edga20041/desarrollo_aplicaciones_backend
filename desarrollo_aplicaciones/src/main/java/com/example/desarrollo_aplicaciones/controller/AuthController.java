@@ -9,6 +9,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +24,7 @@ import com.example.desarrollo_aplicaciones.api.model.AuthResponse;
 import com.example.desarrollo_aplicaciones.api.model.LoginRequest;
 import com.example.desarrollo_aplicaciones.api.model.PasswordResetRequest;
 import com.example.desarrollo_aplicaciones.api.model.RegisterRequest;
+import com.example.desarrollo_aplicaciones.api.model.UserResponse;
 import com.example.desarrollo_aplicaciones.config.JwtUtil;
 import com.example.desarrollo_aplicaciones.entity.PasswordResetToken;
 import com.example.desarrollo_aplicaciones.entity.User;
@@ -94,7 +98,9 @@ public class AuthController {
 
         userRepository.save(newUser);
 
-        // Generar token de verificación
+        newUser.setRepartidorId(newUser.getId());
+        userRepository.save(newUser);
+
         String code = String.format("%06d", (int)(Math.random() * 1000000));
         VerificationToken verificationToken = new VerificationToken();
         verificationToken.setCode(code);
@@ -102,19 +108,17 @@ public class AuthController {
         verificationToken.setUser(newUser);
         verificationTokenRepository.save(verificationToken);
 
-        // Enviar correo de verificación
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(newUser.getEmail());
         message.setSubject("Código de verificación");
         message.setText("Hola " + newUser.getName() + ",\n\n" +
-            "Tu código de verificación es: " + code + "\n\n" +
-            "Este código expirará en 10 minutos.\n\n" +
-            "Gracias.");
+                "Tu código de verificación es: " + code + "\n\n" +
+                "Este código expirará en 10 minutos.\n\n" +
+                "Gracias.");
         mailSender.send(message);
 
-    return ResponseEntity.ok("Registro iniciado. Código enviado al correo.");
+        return ResponseEntity.ok("Registro iniciado. Código enviado al correo.");
     }
-
     @PostMapping("/recover")
     public ResponseEntity<?> sendRecoveryEmail(@RequestBody Map<String, String> body) {
         String email = body.get("email");
@@ -234,4 +238,29 @@ public ResponseEntity<?> resendVerificationCode(@RequestBody Map<String, String>
 
     return ResponseEntity.ok("Código reenviado con éxito.");
 }
+@GetMapping("/user/me")
+public ResponseEntity<UserResponse> getUserInfo() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.isAuthenticated()) {
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String email = userDetails.getUsername(); // El email es el "username" en Spring Security por defecto
+
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            // Crear una instancia de UserResponse con todos los datos
+            UserResponse userResponse = new UserResponse(
+                    user.getId(),
+                    user.getName(),
+                    user.getSurname(),
+                    user.getEmail(),
+                    user.getPhoneNumber(),
+                    user.getDni()
+            );
+            return new ResponseEntity<>(userResponse, HttpStatus.OK);
+        }
+    }
+    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 }
+    
+    }

@@ -1,6 +1,5 @@
 package com.example.desarrollo_aplicaciones.entity;
 
-
 import java.util.Objects;
 
 import jakarta.persistence.Column;
@@ -39,6 +38,10 @@ public class User {
 
     @Column(nullable = false)
     private boolean enabled;
+
+    @Column(name = "repartidor_id")
+    private Long repartidorId;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -51,6 +54,4 @@ public class User {
     public int hashCode() {
         return Objects.hash(id);
     }
- 
-
 }
