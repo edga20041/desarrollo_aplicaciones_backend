@@ -2,8 +2,6 @@ package com.example.desarrollo_aplicaciones.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -29,10 +27,6 @@ public class Ruta {
 
     @Column(nullable = false)
     private String destino;
-
-    @Enumerated(EnumType.STRING) // Almacena el nombre del enum como texto en la base de datos
-    @Column(nullable = false)
-    private EstadoRuta estado;
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private java.time.LocalDateTime fechaCreacion;
