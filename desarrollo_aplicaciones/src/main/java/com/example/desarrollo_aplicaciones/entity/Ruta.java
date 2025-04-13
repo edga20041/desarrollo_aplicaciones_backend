@@ -27,6 +27,11 @@ public class Ruta {
 
     @Column(nullable = false)
     private String destino;
+    @Column(nullable = true)
+    private Double latitud;
+
+    @Column(nullable = true)
+    private Double longitud;
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private java.time.LocalDateTime fechaCreacion;
