@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/register", "/auth/login", "/auth/recover", "/auth/reset-password", "/auth/verify", "/auth/resend-code").permitAll()
                         .requestMatchers("/auth/test").permitAll()
                         .requestMatchers("/rutas").permitAll()
+                        .requestMatchers("/repartidores").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // Agregar el filtro JWT antes del filtro de autenticación por nombre de usuario y contraseña

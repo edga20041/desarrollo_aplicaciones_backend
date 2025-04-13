@@ -29,4 +29,9 @@ public class Entrega {
     @Column(name = "repartidor_id", nullable = false)
     private Long repartidorId; // Clave foránea al ID del repartidor
 
+    @Column(name = "aceptada")
+    private Boolean aceptada;
+
+    @Column(name = "tiempo_decision")
+    private String tiempoDecision; 
 }
