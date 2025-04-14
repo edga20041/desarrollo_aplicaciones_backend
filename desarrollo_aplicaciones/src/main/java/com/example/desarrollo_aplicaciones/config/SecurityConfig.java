@@ -3,6 +3,7 @@ package com.example.desarrollo_aplicaciones.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -30,21 +31,22 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf((csrf) -> csrf.disable())
-                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // No guardar sesión
-                .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/auth/register", "/auth/login", "/auth/recover", "/auth/reset-password", "/auth/verify", "/auth/resend-code").permitAll()
-                        .requestMatchers("/auth/test").permitAll()
-                        .requestMatchers("/rutas").permitAll()
-                        .requestMatchers("/repartidores").permitAll()
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class) // Agregar el filtro JWT antes del filtro de autenticación por nombre de usuario y contraseña
-                .httpBasic((httpBasic) -> httpBasic.disable()); // Deshabilitar la autenticación básica HTTP
+ @Bean
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    http
+            .csrf((csrf) -> csrf.disable())
+            .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests((authorize) -> authorize
+                    .requestMatchers("/auth/register", "/auth/login", "/auth/recover", "/auth/reset-password", "/auth/verify", "/auth/resend-code", "/auth/test").permitAll()
+                    .requestMatchers(HttpMethod.POST, "/rutas/aceptar-ruta/{rutaId}").authenticated() 
+                    .requestMatchers(HttpMethod.POST, "/rutas/{rutaId}/rechazar").authenticated()
+                    .requestMatchers("/rutas/pendientes").authenticated()
+                    .requestMatchers("/rutas/").permitAll()
+                    .anyRequest().authenticated()
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+            .httpBasic((httpBasic) -> httpBasic.disable());
 
-        return http.build();
-    }
+    return http.build();
+}
 }

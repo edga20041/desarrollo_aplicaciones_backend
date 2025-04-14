@@ -1,5 +1,7 @@
 package com.example.desarrollo_aplicaciones.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,12 +29,19 @@ public class Ruta {
 
     @Column(nullable = false)
     private String destino;
-    @Column(nullable = true)
-    private Double latitud;
 
     @Column(nullable = true)
-    private Double longitud;
+    private Double latitudOrigen;
+
+    @Column(nullable = true)
+    private Double longitudOrigen;
+
+    @Column(nullable = true)
+    private Double latitudDestino;
+
+    @Column(nullable = true)
+    private Double longitudDestino;
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
-    private java.time.LocalDateTime fechaCreacion;
+    private LocalDateTime fechaCreacion;
 }
