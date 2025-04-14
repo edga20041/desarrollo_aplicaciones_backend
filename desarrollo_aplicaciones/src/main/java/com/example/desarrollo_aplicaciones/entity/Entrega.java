@@ -1,4 +1,5 @@
-package com.example.desarrollo_aplicaciones.entity; // Ajusta el paquete
+package com.example.desarrollo_aplicaciones.entity;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -28,5 +29,7 @@ public class Entrega {
 
     @Column(name = "repartidor_id", nullable = false)
     private Long repartidorId;
-
+    
+    @Column(name = "fecha_finalizacion")
+    private LocalDateTime fechaFinalizacion;
 }

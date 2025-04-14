@@ -1,5 +1,7 @@
 package com.example.desarrollo_aplicaciones.entity;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -27,4 +29,7 @@ public class RutaAsignada {
 
     @Column(nullable = false)
     private String estado; // pendiente, aceptada
+
+    @Column(name = "fecha_finalizacion")
+    private LocalDateTime fechaFinalizacion;
 }

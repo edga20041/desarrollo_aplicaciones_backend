@@ -10,4 +10,6 @@ import com.example.desarrollo_aplicaciones.entity.RutaAsignada;
 public interface RutaAsignadaRepository extends JpaRepository<RutaAsignada, Long> {
     List<RutaAsignada> findByRepartidorIdAndEstado(Long repartidorId, String estado);
     Optional<RutaAsignada> findByRutaIdAndRepartidorId(Long rutaId, Long repartidorId);
+    Optional<RutaAsignada> findByRepartidorIdAndFechaFinalizacionIsNull(Long repartidorId);
+
 }
