@@ -8,4 +8,6 @@ public class EntregaResponse {
     private String tiempoEntrega;
     private String cliente;
     private String estadoFinal;
+    private String fechaFinalizacion; 
+
 }

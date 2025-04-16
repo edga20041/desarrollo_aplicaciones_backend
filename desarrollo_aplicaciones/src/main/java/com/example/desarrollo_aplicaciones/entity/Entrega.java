@@ -18,9 +18,6 @@ public class Entrega {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "tiempo_entrega")
-    private String tiempoEntrega;
-
     @Column(name = "cliente")
     private String cliente;
 
@@ -29,7 +26,8 @@ public class Entrega {
 
     @Column(name = "repartidor_id", nullable = false)
     private Long repartidorId;
-    
+
     @Column(name = "fecha_finalizacion")
     private LocalDateTime fechaFinalizacion;
+
 }

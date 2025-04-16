@@ -45,7 +45,9 @@ public class EntregaController {
         response.setId(entrega.getId());
         response.setCliente(entrega.getCliente());
         response.setEstadoFinal(entrega.getEstadoFinal());
-        response.setTiempoEntrega(entrega.getTiempoEntrega());
+        response.setFechaFinalizacion(
+            entrega.getFechaFinalizacion() != null ? entrega.getFechaFinalizacion().toString() : null
+        ); 
         return response;
     }
 }

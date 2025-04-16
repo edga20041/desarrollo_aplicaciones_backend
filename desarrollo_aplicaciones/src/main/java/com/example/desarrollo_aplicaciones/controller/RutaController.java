@@ -145,25 +145,34 @@ public ResponseEntity<RutaAsignadaConRutaDTO> obtenerRutaAsignadaActiva() {
                              .orElseGet(() -> ResponseEntity.notFound().build());
 }
 
-      @PostMapping("/finalizar-ruta/{rutaAsignadaId}")
-    public ResponseEntity<Void> finalizarRuta(@PathVariable Long rutaAsignadaId) {
-        Optional<RutaAsignada> rutaAsignadaOptional = rutaAsignadaRepository.findById(rutaAsignadaId);
-        if (!rutaAsignadaOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        RutaAsignada rutaAsignada = rutaAsignadaOptional.get();
-        rutaAsignada.setFechaFinalizacion(LocalDateTime.now());
-        rutaAsignada.setEstado("finalizada"); 
-        rutaAsignadaRepository.save(rutaAsignada);
-
-        if (entregaRepository != null) { 
-            Entrega entrega = new Entrega();
-            entrega.setRepartidorId(rutaAsignada.getRepartidorId());
-            entregaRepository.save(entrega);
-        }
-        return ResponseEntity.ok().build();
+@PostMapping("/finalizar-ruta/{rutaAsignadaId}")
+public ResponseEntity<Void> finalizarRuta(@PathVariable Long rutaAsignadaId) {
+    Optional<RutaAsignada> rutaAsignadaOptional = rutaAsignadaRepository.findById(rutaAsignadaId);
+    if (!rutaAsignadaOptional.isPresent()) {
+        return ResponseEntity.notFound().build();
     }
+
+    RutaAsignada rutaAsignada = rutaAsignadaOptional.get();
+    rutaAsignada.setFechaFinalizacion(LocalDateTime.now());
+    rutaAsignada.setEstado("finalizada");
+    rutaAsignadaRepository.save(rutaAsignada);
+
+    if (entregaRepository != null) {
+        Entrega entrega = new Entrega();
+        entrega.setRepartidorId(rutaAsignada.getRepartidorId());
+        entrega.setFechaFinalizacion(rutaAsignada.getFechaFinalizacion());
+        entrega.setEstadoFinal("Completada");
+
+        if (rutaAsignada.getRuta() != null) {
+            entrega.setCliente(rutaAsignada.getRuta().getCliente());
+        } else {
+            entrega.setCliente("Cliente Desconocido"); 
+        }
+
+        entregaRepository.save(entrega);
+    }
+    return ResponseEntity.ok().build();
+}
 
     @PostMapping
     public ResponseEntity<Ruta> crearRuta(@RequestBody Ruta nuevaRuta) {

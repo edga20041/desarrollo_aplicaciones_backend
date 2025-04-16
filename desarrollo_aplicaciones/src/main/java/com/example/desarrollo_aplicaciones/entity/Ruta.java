@@ -44,4 +44,7 @@ public class Ruta {
 
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
+
+    @Column(nullable = true) 
+    private String cliente;
 }
