@@ -63,13 +63,6 @@ public class AuthController {
 
         @PostMapping("/login")
         public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
-            if (!isValidEmail(loginRequest.getEmail())) {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-
-            if (!isValidPassword(loginRequest.getPassword())) {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
 
             Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
 
@@ -90,31 +83,7 @@ public class AuthController {
         @PostMapping("/register")
         public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
             if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
-
-            if (!isValidName(registerRequest.getName())) {
-                return new ResponseEntity<>("Nombre inválido. Debe empezar por mayúscula y no tener números.", HttpStatus.BAD_REQUEST);
-            }
-
-            if (!isValidSurname(registerRequest.getSurname())) {
-                return new ResponseEntity<>("Apellido inválido. Debe empezar por mayúscula y no tener números.", HttpStatus.BAD_REQUEST);
-            }
-
-            if (!isValidDni(registerRequest.getDni())) {
-                return new ResponseEntity<>("DNI inválido. Debe tener exactamente 8 dígitos.", HttpStatus.BAD_REQUEST);
-            }
-
-            if (!isValidPhoneNumber(registerRequest.getPhoneNumber())) {
-                return new ResponseEntity<>("Teléfono inválido. Debe tener exactamente 9 dígitos.", HttpStatus.BAD_REQUEST);
-            }
-
-            if (!isValidEmail(registerRequest.getEmail())) {
-                return new ResponseEntity<>("Correo electrónico inválido.", HttpStatus.BAD_REQUEST);
-            }
-
-            if (!isValidPassword(registerRequest.getPassword())) {
-                return new ResponseEntity<>("Contraseña inválida. Debe tener una mayúscula, números y mínimo 9 caracteres.", HttpStatus.BAD_REQUEST);
+                return new ResponseEntity<>("El usuario ya está registrado.", HttpStatus.BAD_REQUEST);
             }
 
             User newUser = new User();
