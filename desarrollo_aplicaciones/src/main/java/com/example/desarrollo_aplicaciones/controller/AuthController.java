@@ -35,7 +35,6 @@ import com.example.desarrollo_aplicaciones.repository.VerificationTokenRepositor
 import com.example.desarrollo_aplicaciones.service.PasswordRecoveryService;
 
 import static com.example.desarrollo_aplicaciones.helpers.Validations.*;
-import static com.example.desarrollo_aplicaciones.helpers.Formats.*;
 
 
 @RestController
