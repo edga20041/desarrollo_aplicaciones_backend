@@ -34,6 +34,10 @@ import com.example.desarrollo_aplicaciones.repository.UserRepository;
 import com.example.desarrollo_aplicaciones.repository.VerificationTokenRepository;
 import com.example.desarrollo_aplicaciones.service.PasswordRecoveryService;
 
+import static com.example.desarrollo_aplicaciones.helpers.Validations.*;
+import static com.example.desarrollo_aplicaciones.helpers.Formats.*;
+
+
 @RestController
 @RequestMapping("/auth")
 @CrossOrigin(origins = "http://localhost:8000") 
@@ -86,16 +90,12 @@ public class AuthController {
                 return new ResponseEntity<>("El usuario ya está registrado.", HttpStatus.BAD_REQUEST);
             }
 
-            User newUser = new User();
-            newUser.setEmail(registerRequest.getEmail());
-            newUser.setName(registerRequest.getName());
-            newUser.setSurname(registerRequest.getSurname());
-            newUser.setPhoneNumber(registerRequest.getPhoneNumber());
-            newUser.setDni(registerRequest.getDni());
+            // se puede agregar formateo previo a validacion, ahora solo se hace en la app
 
-            String encryptedPassword = passwordEncoder.encode(registerRequest.getPassword());
-            newUser.setPassword(encryptedPassword);
-            newUser.setEnabled(false);
+            if (!registerValidate(registerRequest)) {
+                return new ResponseEntity<>("Los campos no pasaron las validaciones.", HttpStatus.BAD_REQUEST);
+            }
+            User newUser = createUserEntity(registerRequest);
 
             userRepository.save(newUser);
 
@@ -258,30 +258,28 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
 
-    private boolean isValidName(String name) {
-        return name.matches("^[A-Z][a-zA-Z]*$");
+    //    private boolean isValidDni(Integer dni) {
+    //        if (dni == null) return false;
+    //        String dniStr = String.valueOf(dni);
+    //        return dniStr.matches("^\\d{5,8}$");
+    //    }
+
+    private boolean registerValidate(RegisterRequest registerRequest){
+        return (isValidName(registerRequest.getName())| isValidName(registerRequest.getSurname()) | isValidDni(registerRequest.getDni()) | isValidEmail(registerRequest.getEmail()) | isValidDni(registerRequest.getDni()) | isValidPassword(registerRequest.getPassword()) | isValidPhoneNumber(registerRequest.getPhoneNumber(), "AR"));
     }
 
-    private boolean isValidSurname(String surname) {
-        return surname.matches("^[A-Z][a-zA-Z]*$");
-    }
+    private User createUserEntity(RegisterRequest registerRequest){
+        User user = new User();
 
-    private boolean isValidPhoneNumber(String phone) {
-        return phone.matches("^\\d{9}$");
-    }
+        user.setEmail(registerRequest.getEmail());
+        user.setName(registerRequest.getName());
+        user.setSurname(registerRequest.getSurname());
+        user.setPhoneNumber(registerRequest.getPhoneNumber());
+        user.setDni(registerRequest.getDni());
+        String encryptedPassword = passwordEncoder.encode(registerRequest.getPassword());
+        user.setPassword(encryptedPassword);
+        user.setEnabled(false);
 
-    private boolean isValidDni(Integer dni) {
-        if (dni == null) return false;
-        String dniStr = String.valueOf(dni);
-        return dniStr.matches("^\\d{8}$");
+        return user;
     }
-
-    private boolean isValidEmail(String email) {
-        return email.contains("@");
-    }
-
-    private boolean isValidPassword(String password) {
-        return password.matches("^(?=.*[A-Z])(?=.*\\d).{9,}$");
-    }
-
 }
