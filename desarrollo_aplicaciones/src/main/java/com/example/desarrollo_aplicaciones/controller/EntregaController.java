@@ -3,6 +3,7 @@ package com.example.desarrollo_aplicaciones.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.desarrollo_aplicaciones.api.model.CambiarEstadoEntregaRequest;
 import com.example.desarrollo_aplicaciones.entity.Estado;
 import com.example.desarrollo_aplicaciones.repository.EstadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.desarrollo_aplicaciones.api.model.EntregaResponse;
-import com.example.desarrollo_aplicaciones.api.model.FinalizarEntregaResponse;
+import com.example.desarrollo_aplicaciones.api.model.CambiarEstadoEntregaResponse;
 import com.example.desarrollo_aplicaciones.entity.Entrega;
 import com.example.desarrollo_aplicaciones.entity.User;
 import com.example.desarrollo_aplicaciones.repository.EntregaRepository;
@@ -51,9 +52,18 @@ public class EntregaController {
         }
     }
 
-    @PatchMapping("/finalizar/{entrega_id}")
-    public void finalizarEntrega(@PathVariable Long entrega_id) {
-
+    @PatchMapping("/entregas/cambiar_estado")
+    public CambiarEstadoEntregaResponse cambiarEstadoEntrega(@RequestBody CambiarEstadoEntregaRequest request) {
+        Long entregaId = request.getEntregaId();
+        Long estadoId = request.getEstadoId();
+        Entrega entrega = entregaRepository.findById(entregaId).orElse(null);
+        Estado estado = estadoRepository.findById(estadoId).orElse(null);
+        if (estado == null | entrega == null) {
+            return cambiarEstadoEntregaResponse("Error: Estado o entrega no encontrado");
+        }
+        entrega.setEstadoId(estadoId);
+        entregaRepository.save(entrega);
+        return cambiarEstadoEntregaResponse("Estado cambiado correctamente");
     }
 
     @GetMapping("/pendientes")
@@ -85,6 +95,12 @@ public class EntregaController {
         response.setRepartidorId(entrega.getRepartidorId());
         response.setRutaId(entrega.getRutaId());
         response.setProducto(entrega.getProducto());
+        return response;
+    }
+
+    private CambiarEstadoEntregaResponse cambiarEstadoEntregaResponse(String message) {
+        CambiarEstadoEntregaResponse response = new CambiarEstadoEntregaResponse();
+        response.setStatus(message);
         return response;
     }
 }
