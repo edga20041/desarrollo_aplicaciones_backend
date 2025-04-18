@@ -21,27 +21,27 @@ public class Entrega {
     @Column(name = "cliente", nullable = false)
     private String cliente;
 
-    @Column(name = "clienteDni", nullable = false)
+    @Column(name = "cliente_dni", nullable = false)
     private Integer clienteDni;
 
-    @Column(name = "estadoId", nullable = false)
+    @Column(name = "estado_id", nullable = false)
     private Long estadoId;
 
-    @Column(name = "repartidorId")
+    @Column(name = "repartidor_id")
     private Long repartidorId;
 
-    @Column(name = "rutaId", nullable = false)
+    @Column(name = "ruta_id", nullable = false)
     private Long rutaId;
 
     @Column(name = "producto", nullable = false)
     private String producto;
 
-    @Column(name = "fechaCreacion", nullable = false, updatable = false)
+    @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
-    @Column(name = "fechaAsignacion")
+    @Column(name = "fecha_asignacion")
     private LocalDateTime fechaAsignacion;
 
-    @Column(name = "fechaFinalizacion")
+    @Column(name = "fecha_finalizacion")
     private LocalDateTime fechaFinalizacion;
 }

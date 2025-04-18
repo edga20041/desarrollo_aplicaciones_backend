@@ -6,7 +6,7 @@ public class UserResponse {
     private String surname;
     private String email;
     private String phoneNumber;
-    private Integer dni; // Se mantiene como Integer para coincidir con tu entidad User
+    private Integer dni;
 
     // Constructor vacío
     public UserResponse() {
