@@ -52,7 +52,7 @@ public class EntregaController {
     @GetMapping("/pendientes")
     public List<EntregaResponse> obtenerEntregasPendientes() {
         Estado estadoPendiente = estadoRepository.findByNombre(NombreEstado.Pendiente.toString());
-        List<Entrega> entregasPendientes = entregaRepository.findByEstadoId(estadoPendiente.getId());
+        List<Entrega> entregasPendientes = entregaRepository.findByEstadoIdAndRepartidorIdNull(estadoPendiente.getId());
         return entregasPendientes.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
     }
 
@@ -60,10 +60,16 @@ public class EntregaController {
         EntregaResponse response = new EntregaResponse();
         response.setId(entrega.getId());
         response.setCliente(entrega.getCliente());
+        response.setClienteDni(entrega.getClienteDni());
         response.setEstadoId(entrega.getEstadoId());
+        response.setFechaCreacion(entrega.getFechaCreacion());
+        response.setFechaAsignacion(entrega.getFechaAsignacion() != null ? entrega.getFechaAsignacion() : null);
+        response.setRepartidorId(entrega.getRepartidorId());
         response.setFechaFinalizacion(
             entrega.getFechaFinalizacion() != null ? entrega.getFechaFinalizacion() : null
-        ); 
+        );
+        response.setRepartidorId(entrega.getRepartidorId());
+        response.setRutaId(entrega.getRutaId());
         return response;
     }
 }

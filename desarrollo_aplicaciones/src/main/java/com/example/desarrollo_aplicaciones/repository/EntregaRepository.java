@@ -11,4 +11,5 @@ import com.example.desarrollo_aplicaciones.entity.Entrega;
 public interface EntregaRepository extends JpaRepository<Entrega, Long> {
     List<Entrega> findByRepartidorId(Long repartidorId);
     List<Entrega> findByEstadoId(Long estadoId);
+    List<Entrega> findByEstadoIdAndRepartidorIdNull(Long estadoId);
 }
