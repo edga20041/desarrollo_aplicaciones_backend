@@ -7,7 +7,7 @@ public class EntregaResponse {
     private Long id;
     private String tiempoEntrega;
     private String cliente;
-    private String estadoFinal;
+    private Long estadoId;
     private String fechaFinalizacion; 
 
 }
