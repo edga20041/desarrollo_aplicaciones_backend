@@ -52,18 +52,18 @@ public class EntregaController {
         }
     }
 
-    @PatchMapping("/entregas/cambiar_estado")
+    @PatchMapping("/cambiar_estado")
     public CambiarEstadoEntregaResponse cambiarEstadoEntrega(@RequestBody CambiarEstadoEntregaRequest request) {
         Long entregaId = request.getEntregaId();
         Long estadoId = request.getEstadoId();
         Entrega entrega = entregaRepository.findById(entregaId).orElse(null);
         Estado estado = estadoRepository.findById(estadoId).orElse(null);
         if (estado == null | entrega == null) {
-            return cambiarEstadoEntregaResponse("Error: Estado o entrega no encontrado");
+            return cambiarEstadoEntregaResponse("Error","Estado y/o entrega no encontrados");
         }
         entrega.setEstadoId(estadoId);
         entregaRepository.save(entrega);
-        return cambiarEstadoEntregaResponse("Estado cambiado correctamente");
+        return cambiarEstadoEntregaResponse("Ok", "Estado de entrega cambiado correctamente");
     }
 
     @GetMapping("/pendientes")
@@ -73,10 +73,9 @@ public class EntregaController {
         return entregasPendientes.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
     }
 
-    @GetMapping("/{entidad_id}")
-    public EntregaResponse obtenerEntrega(@PathVariable Long entidad_id) {
-        // Long entregaIdLong = Long.valueOf(entregaId);
-        Entrega entrega = entregaRepository.findById(entidad_id).orElse(null);
+    @GetMapping("/{entrega_id}")
+    public EntregaResponse obtenerEntrega(@PathVariable Long entrega_id) {
+        Entrega entrega = entregaRepository.findById(entrega_id).orElse(null);
         return entrega != null ? convertirAEntregaResponse(entrega) : null;
     }
 
@@ -98,9 +97,10 @@ public class EntregaController {
         return response;
     }
 
-    private CambiarEstadoEntregaResponse cambiarEstadoEntregaResponse(String message) {
+    private CambiarEstadoEntregaResponse cambiarEstadoEntregaResponse(String status, String message) {
         CambiarEstadoEntregaResponse response = new CambiarEstadoEntregaResponse();
-        response.setStatus(message);
+        response.setMessage(message);
+        response.setStatus(status);
         return response;
     }
 }

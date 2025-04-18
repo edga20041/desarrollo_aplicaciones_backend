@@ -39,7 +39,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             .authorizeHttpRequests((authorize) -> authorize
                     .requestMatchers("/auth/register", "/auth/login", "/auth/recover", "/auth/reset-password", "/auth/verify", "/auth/resend-code", "/auth/test").permitAll()
                     .requestMatchers(HttpMethod.GET, "/rutas/{ruta_id}").authenticated()
-                    .requestMatchers(HttpMethod.GET, "/entregas/{entidad_id}").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/entregas/{entrega_id}").authenticated()
                     .requestMatchers(HttpMethod.GET, "/entregas/historial").authenticated()
                     .requestMatchers(HttpMethod.GET, "/entregas/pendientes").authenticated()
                     .requestMatchers(HttpMethod.PATCH, "/entregas/cambiar_estado").authenticated()
