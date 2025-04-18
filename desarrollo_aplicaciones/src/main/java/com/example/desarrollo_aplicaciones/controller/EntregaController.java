@@ -3,9 +3,12 @@ package com.example.desarrollo_aplicaciones.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.desarrollo_aplicaciones.entity.Estado;
+import com.example.desarrollo_aplicaciones.repository.EstadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -16,8 +19,11 @@ import com.example.desarrollo_aplicaciones.entity.User;
 import com.example.desarrollo_aplicaciones.repository.EntregaRepository;
 import com.example.desarrollo_aplicaciones.repository.UserRepository;
 
+import com.example.desarrollo_aplicaciones.helpers.NombreEstado;
+
 @RestController
-@RequestMapping("/repartidores")
+@RequestMapping("/entregas")
+@CrossOrigin(origins = "http://localhost:8000")
 public class EntregaController {
 
     @Autowired
@@ -25,6 +31,9 @@ public class EntregaController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EstadoRepository estadoRepository;
 
     @GetMapping("/historial")
     public List<EntregaResponse> obtenerHistorialEntregas() {
@@ -40,13 +49,20 @@ public class EntregaController {
         }
     }
 
+    @GetMapping("/pendientes")
+    public List<EntregaResponse> obtenerEntregasPendientes() {
+        Estado estadoPendiente = estadoRepository.findByNombre(NombreEstado.Pendiente.toString());
+        List<Entrega> entregasPendientes = entregaRepository.findByEstadoId(estadoPendiente.getId());
+        return entregasPendientes.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
+    }
+
     private EntregaResponse convertirAEntregaResponse(Entrega entrega) {
         EntregaResponse response = new EntregaResponse();
         response.setId(entrega.getId());
         response.setCliente(entrega.getCliente());
         response.setEstadoId(entrega.getEstadoId());
         response.setFechaFinalizacion(
-            entrega.getFechaFinalizacion() != null ? entrega.getFechaFinalizacion().toString() : null
+            entrega.getFechaFinalizacion() != null ? entrega.getFechaFinalizacion() : null
         ); 
         return response;
     }
