@@ -1,5 +1,6 @@
 package com.example.desarrollo_aplicaciones.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,8 +45,12 @@ public class EntregaController {
 
         User user = userRepository.findByEmail(email).orElse(null);
         Estado estadoFinalizado = estadoRepository.findByNombre(NombreEstado.Finalizado.toString());
+        Estado estadoEnProceso = estadoRepository.findByNombre(NombreEstado.EnProceso.toString());
+        List<Long> estados = List.of(estadoFinalizado.getId(), estadoEnProceso.getId());
+
         if (user != null && user.getRepartidorId() != null) {
-            List<Entrega> entregas = entregaRepository.findByRepartidorIdAndEstadoId(user.getRepartidorId(), estadoFinalizado.getId());
+            List<Entrega> entregas = entregaRepository.findByRepartidorIdAndEstadoIdIn(user.getRepartidorId(), estados);
+
             return entregas.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
         } else {
             return List.of();
