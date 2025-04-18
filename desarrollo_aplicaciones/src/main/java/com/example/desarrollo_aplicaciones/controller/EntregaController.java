@@ -8,12 +8,10 @@ import com.example.desarrollo_aplicaciones.repository.EstadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.desarrollo_aplicaciones.api.model.EntregaResponse;
+import com.example.desarrollo_aplicaciones.api.model.FinalizarEntregaResponse;
 import com.example.desarrollo_aplicaciones.entity.Entrega;
 import com.example.desarrollo_aplicaciones.entity.User;
 import com.example.desarrollo_aplicaciones.repository.EntregaRepository;
@@ -35,18 +33,27 @@ public class EntregaController {
     @Autowired
     private EstadoRepository estadoRepository;
 
+    //PATCH
+    //GET PARTICULAR
+
     @GetMapping("/historial")
     public List<EntregaResponse> obtenerHistorialEntregas() {
         UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email).orElse(null);
+        Estado estadoFinalizado = estadoRepository.findByNombre(NombreEstado.Finalizado.toString());
         if (user != null && user.getRepartidorId() != null) {
-            List<Entrega> entregas = entregaRepository.findByRepartidorId(user.getRepartidorId());
+            List<Entrega> entregas = entregaRepository.findByRepartidorIdAndEstadoId(user.getRepartidorId(), estadoFinalizado.getId());
             return entregas.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
         } else {
             return List.of();
         }
+    }
+
+    @PatchMapping("/finalizar/{entrega_id}")
+    public void finalizarEntrega(@PathVariable Long entrega_id) {
+
     }
 
     @GetMapping("/pendientes")
@@ -54,6 +61,12 @@ public class EntregaController {
         Estado estadoPendiente = estadoRepository.findByNombre(NombreEstado.Pendiente.toString());
         List<Entrega> entregasPendientes = entregaRepository.findByEstadoIdAndRepartidorIdNull(estadoPendiente.getId());
         return entregasPendientes.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
+    }
+
+    @GetMapping("/{entrega_id}")
+    public EntregaResponse obtenerEntrega(Long entrega_id) {
+        Entrega entrega = entregaRepository.findById(entrega_id).orElse(null);
+        return entrega != null ? convertirAEntregaResponse(entrega) : null;
     }
 
     private EntregaResponse convertirAEntregaResponse(Entrega entrega) {
@@ -70,6 +83,7 @@ public class EntregaController {
         );
         response.setRepartidorId(entrega.getRepartidorId());
         response.setRutaId(entrega.getRutaId());
+        response.setProducto(entrega.getProducto());
         return response;
     }
 }
