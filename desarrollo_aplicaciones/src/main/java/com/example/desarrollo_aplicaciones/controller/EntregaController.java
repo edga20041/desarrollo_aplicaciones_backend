@@ -44,7 +44,7 @@ public class EntregaController {
         EntregaResponse response = new EntregaResponse();
         response.setId(entrega.getId());
         response.setCliente(entrega.getCliente());
-        response.setEstadoFinal(entrega.getEstadoFinal());
+        response.setEstadoId(entrega.getEstadoId());
         response.setFechaFinalizacion(
             entrega.getFechaFinalizacion() != null ? entrega.getFechaFinalizacion().toString() : null
         ); 

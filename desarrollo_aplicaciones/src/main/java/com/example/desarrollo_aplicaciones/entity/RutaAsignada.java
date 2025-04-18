@@ -27,14 +27,14 @@ public class RutaAsignada {
     @Column(name = "repartidor_id", nullable = false)
     private Long repartidorId;
 
-    @ManyToOne(fetch = FetchType.EAGER) 
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "ruta_id", nullable = false)
     private Ruta ruta;
 
     @Column(nullable = false)
     private String estado;
-    
-    @CreationTimestamp 
+
+    @CreationTimestamp
     @Column(name = "fecha_asignacion", nullable = false, updatable = false)
     private LocalDateTime fechaAsignacion;
 

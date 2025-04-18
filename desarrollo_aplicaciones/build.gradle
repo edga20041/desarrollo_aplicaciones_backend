@@ -36,6 +36,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	implementation 'com.auth0:java-jwt:4.4.0'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'com.googlecode.libphonenumber:libphonenumber:8.13.40'
 }
 
 tasks.named('test') {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.example.desarrollo_aplicaciones.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,17 +21,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.desarrollo_aplicaciones.entity.Entrega;
+import com.example.desarrollo_aplicaciones.entity.Estado;
 import com.example.desarrollo_aplicaciones.entity.Ruta;
 import com.example.desarrollo_aplicaciones.entity.RutaAsignada;
 import com.example.desarrollo_aplicaciones.entity.RutaAsignadaConRutaDTO;
 import com.example.desarrollo_aplicaciones.entity.RutaRechazada;
 import com.example.desarrollo_aplicaciones.entity.User;
-import com.example.desarrollo_aplicaciones.repository.EntregaRepository;
-import com.example.desarrollo_aplicaciones.repository.RutaAsignadaRepository;
-import com.example.desarrollo_aplicaciones.repository.RutaRechazadaRepository;
-import com.example.desarrollo_aplicaciones.repository.RutaRepository;
-import com.example.desarrollo_aplicaciones.repository.UserRepository;
 import com.example.desarrollo_aplicaciones.service.GeoCodingService;
+import com.example.desarrollo_aplicaciones.helpers.NombreEstado;
 
 @RestController
 @RequestMapping("/rutas")
@@ -48,6 +46,9 @@ public class RutaController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private EstadoRepository estadoRepository;
 
     @Autowired
     private GeoCodingService geocodingService;
@@ -161,13 +162,13 @@ public ResponseEntity<Void> finalizarRuta(@PathVariable Long rutaAsignadaId) {
         Entrega entrega = new Entrega();
         entrega.setRepartidorId(rutaAsignada.getRepartidorId());
         entrega.setFechaFinalizacion(rutaAsignada.getFechaFinalizacion());
-        entrega.setEstadoFinal("Completada");
+        entrega.setEstadoId(estadoRepository.findByNombre(NombreEstado.Finalizado.toString()).getId());
 
-        if (rutaAsignada.getRuta() != null) {
-            entrega.setCliente(rutaAsignada.getRuta().getCliente());
-        } else {
-            entrega.setCliente("Cliente Desconocido"); 
-        }
+//        if (rutaAsignada.getRuta() != null) {
+//            entrega.setCliente(rutaAsignada.getRuta().getCliente());
+//        } else {
+//            entrega.setCliente("Cliente Desconocido");
+//        }
 
         entregaRepository.save(entrega);
     }
