@@ -42,153 +42,151 @@ import static com.example.desarrollo_aplicaciones.helpers.Validations.*;
 @CrossOrigin(origins = "http://localhost:8000") 
 
 public class AuthController {
+    @Autowired
+    private UserRepository userRepository;
 
-        @Autowired
-        private UserRepository userRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-        @Autowired
-        private PasswordEncoder passwordEncoder;
+    @Autowired
+    private JwtUtil jwtUtil;
 
-        @Autowired
-        private JwtUtil jwtUtil;
+    @Autowired
+    private PasswordRecoveryService passwordRecoveryService;
 
-        @Autowired
-        private PasswordRecoveryService passwordRecoveryService;
+    @Autowired
+    private PasswordResetTokenRepository passwordResetTokenRepository;
 
-        @Autowired
-        private PasswordResetTokenRepository passwordResetTokenRepository;
+     @Autowired
+    private VerificationTokenRepository verificationTokenRepository;
 
-         @Autowired
-        private VerificationTokenRepository verificationTokenRepository;
+    @Autowired
+    private JavaMailSender mailSender;
 
-        @Autowired
-        private JavaMailSender mailSender;
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
 
-        @PostMapping("/login")
-        public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest loginRequest) {
+        Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
 
-            Optional<User> userOptional = userRepository.findByEmail(loginRequest.getEmail());
-
-            if (userOptional.isPresent()) {
-                User user = userOptional.get();
-                if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-                    String jwtToken = jwtUtil.generateToken(user.getEmail());
-                    AuthResponse response = new AuthResponse(jwtToken, user.getId(), user.getName());
-                    return new ResponseEntity<>(response, HttpStatus.OK);
-                } else {
-                    return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-                }
+        if (userOptional.isPresent()) {
+            User user = userOptional.get();
+            if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+                String jwtToken = jwtUtil.generateToken(user.getEmail());
+                AuthResponse response = new AuthResponse(jwtToken, user.getId(), user.getName());
+                return new ResponseEntity<>(response, HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
             }
+        } else {
+            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
+        if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
+            return new ResponseEntity<>("El usuario ya está registrado.", HttpStatus.BAD_REQUEST);
         }
 
-        @PostMapping("/register")
-        public ResponseEntity<String> register(@RequestBody RegisterRequest registerRequest) {
-            if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-                return new ResponseEntity<>("El usuario ya está registrado.", HttpStatus.BAD_REQUEST);
+        // se puede agregar formateo previo a validacion, ahora solo se hace en la app
+
+        if (!registerValidate(registerRequest)) {
+            return new ResponseEntity<>("Los campos no pasaron las validaciones.", HttpStatus.BAD_REQUEST);
+        }
+        User newUser = createUserEntity(registerRequest);
+
+        userRepository.save(newUser);
+
+        newUser.setRepartidorId(newUser.getId());
+        userRepository.save(newUser);
+
+        String code = String.format("%06d", (int)(Math.random() * 1000000));
+        VerificationToken verificationToken = new VerificationToken();
+        verificationToken.setCode(code);
+        verificationToken.setExpirationDate(LocalDateTime.now().plusMinutes(10));
+        verificationToken.setUser(newUser);
+        verificationTokenRepository.save(verificationToken);
+
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(newUser.getEmail());
+        message.setSubject("Código de verificación");
+        message.setText("Hola " + newUser.getName() + ",\n\n" +
+                "Tu código de verificación es: " + code + "\n\n" +
+                "Este código expirará en 10 minutos.\n\n" +
+                "Gracias.");
+        mailSender.send(message);
+
+        return ResponseEntity.ok("Registro iniciado. Código enviado al correo.");
+    }
+    @PostMapping("/recover")
+    public ResponseEntity<?> sendRecoveryEmail(@RequestBody Map<String, String> body) {
+        String email = body.get("email");
+        boolean enviado = passwordRecoveryService.sendRecoveryEmail(email);
+        if (enviado) {
+            return ResponseEntity.ok("Email de recuperación enviado.");
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
+        Optional<PasswordResetToken> tokenOptional = passwordResetTokenRepository.findByToken(request.getToken());
+
+        if (tokenOptional.isPresent()) {
+            PasswordResetToken token = tokenOptional.get();
+
+            if (token.getExpirationDate().isBefore(java.time.LocalDateTime.now())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Token expirado."));
             }
 
-            // se puede agregar formateo previo a validacion, ahora solo se hace en la app
+            User user = token.getUser();
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+            userRepository.save(user);
 
-            if (!registerValidate(registerRequest)) {
-                return new ResponseEntity<>("Los campos no pasaron las validaciones.", HttpStatus.BAD_REQUEST);
-            }
-            User newUser = createUserEntity(registerRequest);
+            passwordResetTokenRepository.delete(token);
 
-            userRepository.save(newUser);
-
-            newUser.setRepartidorId(newUser.getId());
-            userRepository.save(newUser);
-
-            String code = String.format("%06d", (int)(Math.random() * 1000000));
-            VerificationToken verificationToken = new VerificationToken();
-            verificationToken.setCode(code);
-            verificationToken.setExpirationDate(LocalDateTime.now().plusMinutes(10));
-            verificationToken.setUser(newUser);
-            verificationTokenRepository.save(verificationToken);
-
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setTo(newUser.getEmail());
-            message.setSubject("Código de verificación");
-            message.setText("Hola " + newUser.getName() + ",\n\n" +
-                    "Tu código de verificación es: " + code + "\n\n" +
-                    "Este código expirará en 10 minutos.\n\n" +
-                    "Gracias.");
-            mailSender.send(message);
-
-            return ResponseEntity.ok("Registro iniciado. Código enviado al correo.");
+            return ResponseEntity.ok(Map.of("message", "Contraseña restablecida correctamente."));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Token inválido."));
         }
-        @PostMapping("/recover")
-        public ResponseEntity<?> sendRecoveryEmail(@RequestBody Map<String, String> body) {
-            String email = body.get("email");
-            boolean enviado = passwordRecoveryService.sendRecoveryEmail(email);
-            if (enviado) {
-                return ResponseEntity.ok("Email de recuperación enviado.");
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuario no encontrado.");
-            }
-        }
+    }
 
-        @PostMapping("/reset-password")
-        public ResponseEntity<?> resetPassword(@RequestBody PasswordResetRequest request) {
-            Optional<PasswordResetToken> tokenOptional = passwordResetTokenRepository.findByToken(request.getToken());
+    @GetMapping("/test")
+    public String testEndpoint() {
+        return "Servidor funcionando!";
+    }
 
-            if (tokenOptional.isPresent()) {
-                PasswordResetToken token = tokenOptional.get();
+    @PostMapping("/verify")
+    public ResponseEntity<AuthResponse> verifyEmail(@RequestBody Map<String, String> body) {
+        String code = body.get("code");
 
-                if (token.getExpirationDate().isBefore(java.time.LocalDateTime.now())) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Token expirado."));
-                }
+        Optional<VerificationToken> tokenOptional = verificationTokenRepository.findByCode(code);
 
-                User user = token.getUser();
-                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-                userRepository.save(user);
+        if (tokenOptional.isPresent()) {
+            VerificationToken verificationToken = tokenOptional.get();
 
-                passwordResetTokenRepository.delete(token);
-
-                return ResponseEntity.ok(Map.of("message", "Contraseña restablecida correctamente."));
-            } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Token inválido."));
-            }
-        }
-
-        @GetMapping("/test")
-        public String testEndpoint() {
-            return "Servidor funcionando!";
-        }
-
-        @PostMapping("/verify")
-        public ResponseEntity<AuthResponse> verifyEmail(@RequestBody Map<String, String> body) {
-            String code = body.get("code");
-
-            Optional<VerificationToken> tokenOptional = verificationTokenRepository.findByCode(code);
-
-            if (tokenOptional.isPresent()) {
-                VerificationToken verificationToken = tokenOptional.get();
-
-                if (verificationToken.getExpirationDate().isBefore(LocalDateTime.now())) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                                         .body(null);
-                }
-
-                User user = verificationToken.getUser();
-                user.setEnabled(true);
-                userRepository.save(user);
-
-                verificationTokenRepository.delete(verificationToken);
-
-                String jwt = jwtUtil.generateToken(user.getEmail());
-                AuthResponse authResponse = new AuthResponse(jwt, user.getId(), user.getName());
-
-                return ResponseEntity.ok(authResponse);
+            if (verificationToken.getExpirationDate().isBefore(LocalDateTime.now())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                                     .body(null);
             }
 
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            User user = verificationToken.getUser();
+            user.setEnabled(true);
+            userRepository.save(user);
+
+            verificationTokenRepository.delete(verificationToken);
+
+            String jwt = jwtUtil.generateToken(user.getEmail());
+            AuthResponse authResponse = new AuthResponse(jwt, user.getId(), user.getName());
+
+            return ResponseEntity.ok(authResponse);
         }
 
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
 
-        @PostMapping("/resend-code")
+    @PostMapping("/resend-code")
     public ResponseEntity<?> resendVerificationCode(@RequestBody Map<String, String> body) {
         String email = body.get("email");
 
@@ -256,12 +254,6 @@ public class AuthController {
         }
         return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
     }
-
-    //    private boolean isValidDni(Integer dni) {
-    //        if (dni == null) return false;
-    //        String dniStr = String.valueOf(dni);
-    //        return dniStr.matches("^\\d{5,8}$");
-    //    }
 
     private boolean registerValidate(RegisterRequest registerRequest){
         return (isValidName(registerRequest.getName())| isValidName(registerRequest.getSurname()) | isValidDni(registerRequest.getDni()) | isValidEmail(registerRequest.getEmail()) | isValidDni(registerRequest.getDni()) | isValidPassword(registerRequest.getPassword()) | isValidPhoneNumber(registerRequest.getPhoneNumber(), "AR"));
