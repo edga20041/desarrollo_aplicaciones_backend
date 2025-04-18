@@ -1,4 +1,4 @@
-package com.example.desarrollo_aplicaciones.repository; // Ajusta el paquete
+package com.example.desarrollo_aplicaciones.repository;
 
 import java.util.List;
 
