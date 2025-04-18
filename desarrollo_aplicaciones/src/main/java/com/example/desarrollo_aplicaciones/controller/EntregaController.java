@@ -63,9 +63,10 @@ public class EntregaController {
         return entregasPendientes.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
     }
 
-    @GetMapping("/{entrega_id}")
-    public EntregaResponse obtenerEntrega(Long entrega_id) {
-        Entrega entrega = entregaRepository.findById(entrega_id).orElse(null);
+    @GetMapping("/{entidad_id}")
+    public EntregaResponse obtenerEntrega(@PathVariable Long entidad_id) {
+        // Long entregaIdLong = Long.valueOf(entregaId);
+        Entrega entrega = entregaRepository.findById(entidad_id).orElse(null);
         return entrega != null ? convertirAEntregaResponse(entrega) : null;
     }
 
