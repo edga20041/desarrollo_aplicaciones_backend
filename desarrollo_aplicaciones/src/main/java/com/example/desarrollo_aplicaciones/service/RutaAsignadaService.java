@@ -3,6 +3,7 @@ package com.example.desarrollo_aplicaciones.service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import com.example.desarrollo_aplicaciones.repository.EstadoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,9 @@ public class RutaAsignadaService {
 
     @Autowired
     private EntregaRepository entregaRepository;
+
+    @Autowired
+    private EstadoRepository estadoRepository;
 
     @Autowired
     private RutaRepository rutaRepository;
@@ -45,12 +49,12 @@ public class RutaAsignadaService {
             Entrega entrega = new Entrega();
             entrega.setRepartidorId(rutaAsignada.getRepartidorId());
             entrega.setFechaFinalizacion(LocalDateTime.now());
-            entrega.setEstadoFinal("Finalizada"); 
+//            entrega.setEstadoFinal("Finalizada");
 
             Ruta ruta = rutaAsignada.getRuta();
-            if (ruta != null) {
-                entrega.setCliente(ruta.getCliente());
-            }
+//            if (ruta != null) {
+//                entrega.setCliente(ruta.getCliente());
+//            }
 
             entregaRepository.save(entrega);
 

@@ -18,16 +18,30 @@ public class Entrega {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "cliente")
+    @Column(name = "cliente", nullable = false)
     private String cliente;
 
-    @Column(name = "estado_final")
-    private String estadoFinal;
+    @Column(name = "clienteDni", nullable = false)
+    private Integer clienteDni;
 
-    @Column(name = "repartidor_id", nullable = false)
+    @Column(name = "estadoId", nullable = false)
+    private Long estadoId;
+
+    @Column(name = "repartidorId")
     private Long repartidorId;
 
-    @Column(name = "fecha_finalizacion")
-    private LocalDateTime fechaFinalizacion;
+    @Column(name = "rutaId", nullable = false)
+    private Long rutaId;
 
+    @Column(name = "producto", nullable = false)
+    private String producto;
+
+    @Column(name = "fechaCreacion", nullable = false, updatable = false)
+    private LocalDateTime fechaCreacion;
+
+    @Column(name = "fechaAsignacion")
+    private LocalDateTime fechaAsignacion;
+
+    @Column(name = "fechaFinalizacion")
+    private LocalDateTime fechaFinalizacion;
 }

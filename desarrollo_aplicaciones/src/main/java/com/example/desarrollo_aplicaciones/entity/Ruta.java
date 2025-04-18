@@ -42,9 +42,6 @@ public class Ruta {
     @Column(nullable = true)
     private Double longitudDestino;
 
-    @Column(name = "fecha_creacion", nullable = false, updatable = false)
-    private LocalDateTime fechaCreacion;
-
-    @Column(nullable = true) 
-    private String cliente;
+    @Column(name = "fecha_creacion", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP(4)")
+    private LocalDateTime fechaCreacion = LocalDateTime.now();
 }
