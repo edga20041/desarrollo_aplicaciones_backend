@@ -36,7 +36,7 @@ public class EntregaController {
     private EstadoRepository estadoRepository;
 
     //PATCH
-    //GET PARTICULAR
+    //GET PARTICULAR    
 
     @GetMapping("/historial")
     public List<EntregaResponse> obtenerHistorialEntregas() {
@@ -44,43 +44,63 @@ public class EntregaController {
         String email = userDetails.getUsername();
 
         User user = userRepository.findByEmail(email).orElse(null);
-        Estado estadoFinalizado = estadoRepository.findByNombre(NombreEstado.Finalizado.toString());
-        Estado estadoEnProceso = estadoRepository.findByNombre(NombreEstado.EnProceso.toString());
-        List<Long> estados = List.of(estadoFinalizado.getId(), estadoEnProceso.getId());
-
+        
         if (user != null && user.getRepartidorId() != null) {
-            List<Entrega> entregas = entregaRepository.findByRepartidorIdAndEstadoIdIn(user.getRepartidorId(), estados);
-
+            List<Entrega> entregas = entregaRepository.findByRepartidorId(user.getRepartidorId());
+            
+            // Convertir las entregas a la respuesta que queremos devolver
             return entregas.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
         } else {
-            return List.of();
+            return List.of(); // Retorna una lista vacía si no se encuentra el usuario o no tiene repartidorId
         }
     }
+
 
     @PatchMapping("/cambiar_estado")
     public CambiarEstadoEntregaResponse cambiarEstadoEntrega(@RequestBody CambiarEstadoEntregaRequest request) {
         Long entregaId = request.getEntregaId();
         Long estadoId = request.getEstadoId();
-        Long repartidorId = request.getRepartidorId();
+        Long repartidorIdRequest = request.getRepartidorId(); // Obtenemos el repartidorId de la request (puede ser null)
         Entrega entrega = entregaRepository.findById(entregaId).orElse(null);
         Estado estado = estadoRepository.findById(estadoId).orElse(null);
+    
         if (estado == null | entrega == null) {
-            return cambiarEstadoEntregaResponse("Error","Estado y/o entrega no encontrados");
+            return cambiarEstadoEntregaResponse("Error", "Estado y/o entrega no encontrados");
         }
+    
         entrega.setEstadoId(estadoId);
-        entrega.setRepartidorId(null);
-
-        if (estado.getNombre().equals(NombreEstado.Finalizado.toString()) | estado.getNombre().equals(NombreEstado.EnProceso.toString())) {
-            if (repartidorId == null) {
-                return cambiarEstadoEntregaResponse("Error", "El repartidor no puede ser nulo en el estado Finalizado o En Proceso");
+    
+        // Obtener el usuario autenticado (asumiendo que el repartidor está autenticado)
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+        User usuarioAutenticado = userRepository.findByEmail(email).orElse(null);
+    
+        if (estado.getNombre().equals(NombreEstado.EnProceso.toString())) {
+            if (repartidorIdRequest == null) {
+                return cambiarEstadoEntregaResponse("Error", "El repartidor no puede ser nulo en el estado En Proceso");
             }
-            User repartidor = userRepository.findById(repartidorId).orElse(null);
+            User repartidor = userRepository.findById(repartidorIdRequest).orElse(null);
             if (repartidor == null) {
                 return cambiarEstadoEntregaResponse("Error", "El repartidor no fue encontrado en el sistema");
             }
-            entrega.setRepartidorId(repartidorId);
+            entrega.setRepartidorId(repartidor.getId());
+        } else if (estado.getNombre().equals(NombreEstado.Finalizado.toString())) {
+            // **Guardar el ID del usuario autenticado como el repartidor que finalizó**
+            if (usuarioAutenticado != null && usuarioAutenticado.getRepartidorId() != null) {
+                entrega.setRepartidorId(usuarioAutenticado.getRepartidorId());
+            } else if (repartidorIdRequest != null) {
+                // Si por alguna razón se envía un repartidorId en la request, también lo guardamos
+                User repartidor = userRepository.findById(repartidorIdRequest).orElse(null);
+                if (repartidor != null) {
+                    entrega.setRepartidorId(repartidor.getId());
+                }
+            } else {
+                entrega.setRepartidorId(null); // Si no hay usuario autenticado con repartidorId ni se envía en la request
+            }
+        } else if (estado.getNombre().equals(NombreEstado.Pendiente.toString())) {
+            entrega.setRepartidorId(null);
         }
-
+    
         entregaRepository.save(entrega);
         return cambiarEstadoEntregaResponse("Ok", "Estado de entrega cambiado correctamente");
     }
