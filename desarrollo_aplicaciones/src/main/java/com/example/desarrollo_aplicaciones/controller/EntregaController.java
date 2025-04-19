@@ -1,5 +1,6 @@
 package com.example.desarrollo_aplicaciones.controller;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,26 +45,44 @@ public class EntregaController {
 
         User user = userRepository.findByEmail(email).orElse(null);
         Estado estadoFinalizado = estadoRepository.findByNombre(NombreEstado.Finalizado.toString());
+        Estado estadoEnProceso = estadoRepository.findByNombre(NombreEstado.EnProceso.toString());
+        List<Long> estados = List.of(estadoFinalizado.getId(), estadoEnProceso.getId());
+
         if (user != null && user.getRepartidorId() != null) {
-            List<Entrega> entregas = entregaRepository.findByRepartidorIdAndEstadoId(user.getRepartidorId(), estadoFinalizado.getId());
+            List<Entrega> entregas = entregaRepository.findByRepartidorIdAndEstadoIdIn(user.getRepartidorId(), estados);
+
             return entregas.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
         } else {
             return List.of();
         }
     }
 
-    @PatchMapping("/entregas/cambiar_estado")
+    @PatchMapping("/cambiar_estado")
     public CambiarEstadoEntregaResponse cambiarEstadoEntrega(@RequestBody CambiarEstadoEntregaRequest request) {
         Long entregaId = request.getEntregaId();
         Long estadoId = request.getEstadoId();
+        Long repartidorId = request.getRepartidorId();
         Entrega entrega = entregaRepository.findById(entregaId).orElse(null);
         Estado estado = estadoRepository.findById(estadoId).orElse(null);
         if (estado == null | entrega == null) {
-            return cambiarEstadoEntregaResponse("Error: Estado o entrega no encontrado");
+            return cambiarEstadoEntregaResponse("Error","Estado y/o entrega no encontrados");
         }
         entrega.setEstadoId(estadoId);
+        entrega.setRepartidorId(null);
+
+        if (estado.getNombre().equals(NombreEstado.Finalizado.toString()) | estado.getNombre().equals(NombreEstado.EnProceso.toString())) {
+            if (repartidorId == null) {
+                return cambiarEstadoEntregaResponse("Error", "El repartidor no puede ser nulo en el estado Finalizado o En Proceso");
+            }
+            User repartidor = userRepository.findById(repartidorId).orElse(null);
+            if (repartidor == null) {
+                return cambiarEstadoEntregaResponse("Error", "El repartidor no fue encontrado en el sistema");
+            }
+            entrega.setRepartidorId(repartidorId);
+        }
+
         entregaRepository.save(entrega);
-        return cambiarEstadoEntregaResponse("Estado cambiado correctamente");
+        return cambiarEstadoEntregaResponse("Ok", "Estado de entrega cambiado correctamente");
     }
 
     @GetMapping("/pendientes")
@@ -73,10 +92,9 @@ public class EntregaController {
         return entregasPendientes.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
     }
 
-    @GetMapping("/{entidad_id}")
-    public EntregaResponse obtenerEntrega(@PathVariable Long entidad_id) {
-        // Long entregaIdLong = Long.valueOf(entregaId);
-        Entrega entrega = entregaRepository.findById(entidad_id).orElse(null);
+    @GetMapping("/{entrega_id}")
+    public EntregaResponse obtenerEntrega(@PathVariable Long entrega_id) {
+        Entrega entrega = entregaRepository.findById(entrega_id).orElse(null);
         return entrega != null ? convertirAEntregaResponse(entrega) : null;
     }
 
@@ -98,9 +116,10 @@ public class EntregaController {
         return response;
     }
 
-    private CambiarEstadoEntregaResponse cambiarEstadoEntregaResponse(String message) {
+    private CambiarEstadoEntregaResponse cambiarEstadoEntregaResponse(String status, String message) {
         CambiarEstadoEntregaResponse response = new CambiarEstadoEntregaResponse();
-        response.setStatus(message);
+        response.setMessage(message);
+        response.setStatus(status);
         return response;
     }
 }

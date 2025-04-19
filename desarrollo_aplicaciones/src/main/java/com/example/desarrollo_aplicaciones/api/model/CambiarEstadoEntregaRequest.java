@@ -6,4 +6,5 @@ import lombok.Data;
 public class CambiarEstadoEntregaRequest {
     private Long entregaId;
     private Long estadoId;
+    private Long repartidorId;
 }
