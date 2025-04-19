@@ -61,12 +61,26 @@ public class EntregaController {
     public CambiarEstadoEntregaResponse cambiarEstadoEntrega(@RequestBody CambiarEstadoEntregaRequest request) {
         Long entregaId = request.getEntregaId();
         Long estadoId = request.getEstadoId();
+        Long repartidorId = request.getRepartidorId();
         Entrega entrega = entregaRepository.findById(entregaId).orElse(null);
         Estado estado = estadoRepository.findById(estadoId).orElse(null);
         if (estado == null | entrega == null) {
             return cambiarEstadoEntregaResponse("Error","Estado y/o entrega no encontrados");
         }
         entrega.setEstadoId(estadoId);
+        entrega.setRepartidorId(null);
+
+        if (estado.getNombre().equals(NombreEstado.Finalizado.toString()) | estado.getNombre().equals(NombreEstado.EnProceso.toString())) {
+            if (repartidorId == null) {
+                return cambiarEstadoEntregaResponse("Error", "El repartidor no puede ser nulo en el estado Finalizado o En Proceso");
+            }
+            User repartidor = userRepository.findById(repartidorId).orElse(null);
+            if (repartidor == null) {
+                return cambiarEstadoEntregaResponse("Error", "El repartidor no fue encontrado en el sistema");
+            }
+            entrega.setRepartidorId(repartidorId);
+        }
+
         entregaRepository.save(entrega);
         return cambiarEstadoEntregaResponse("Ok", "Estado de entrega cambiado correctamente");
     }
