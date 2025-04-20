@@ -37,7 +37,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
             .csrf((csrf) -> csrf.disable())
             .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests((authorize) -> authorize
-                    .requestMatchers("/auth/register", "/auth/login", "/auth/recover", "/auth/reset-password", "/auth/verify", "/auth/resend-code", "/auth/test", "auth/validate-recovery-code").permitAll()
+                    .requestMatchers("/auth/register", "/auth/login", "/auth/recover", "/auth/reset-password", "/auth/verify", "/auth/resend-code", "/auth/test", "auth/validate-recovery-code", "auth/resend-recovery-code").permitAll()
                     .requestMatchers(HttpMethod.GET, "/rutas/{ruta_id}").authenticated()
                     .requestMatchers(HttpMethod.GET, "/entregas/{entrega_id}").authenticated()
                     .requestMatchers(HttpMethod.GET, "/entregas/historial").authenticated()
