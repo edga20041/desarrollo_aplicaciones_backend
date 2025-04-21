@@ -1,5 +1,6 @@
 package com.example.desarrollo_aplicaciones.controller;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -76,6 +77,10 @@ public class EntregaController {
         User usuarioAutenticado = userRepository.findByEmail(email).orElse(null);
     
         if (estado.getNombre().equals(NombreEstado.EnProceso.toString())) {
+
+            entrega.setFechaAsignacion(LocalDateTime.now());
+            entrega.setFechaFinalizacion(null);
+
             if (repartidorIdRequest == null) {
                 return cambiarEstadoEntregaResponse("Error", "El repartidor no puede ser nulo en el estado En Proceso");
             }
@@ -85,6 +90,8 @@ public class EntregaController {
             }
             entrega.setRepartidorId(repartidor.getId());
         } else if (estado.getNombre().equals(NombreEstado.Finalizado.toString())) {
+
+            entrega.setFechaFinalizacion(LocalDateTime.now());
             // **Guardar el ID del usuario autenticado como el repartidor que finalizó**
             if (usuarioAutenticado != null && usuarioAutenticado.getRepartidorId() != null) {
                 entrega.setRepartidorId(usuarioAutenticado.getRepartidorId());
@@ -95,12 +102,15 @@ public class EntregaController {
                     entrega.setRepartidorId(repartidor.getId());
                 }
             } else {
+
                 entrega.setRepartidorId(null); // Si no hay usuario autenticado con repartidorId ni se envía en la request
             }
         } else if (estado.getNombre().equals(NombreEstado.Pendiente.toString())) {
             entrega.setRepartidorId(null);
+            entrega.setFechaAsignacion(null);
+            entrega.setFechaFinalizacion(null);
         }
-    
+
         entregaRepository.save(entrega);
         return cambiarEstadoEntregaResponse("Ok", "Estado de entrega cambiado correctamente");
     }

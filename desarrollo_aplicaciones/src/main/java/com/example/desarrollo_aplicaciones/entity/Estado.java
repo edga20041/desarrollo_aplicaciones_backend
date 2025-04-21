@@ -22,5 +22,5 @@ public class Estado {
     private String nombre;
 
     @Column(name = "creado", nullable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime fechaFinalizacion = LocalDateTime.now();
+    private LocalDateTime creado = LocalDateTime.now();
 }
