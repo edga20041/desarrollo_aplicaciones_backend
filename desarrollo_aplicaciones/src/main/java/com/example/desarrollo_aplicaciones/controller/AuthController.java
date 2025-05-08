@@ -40,7 +40,7 @@ import static com.example.desarrollo_aplicaciones.helpers.Validations.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "http://localhost:8000") 
+@CrossOrigin(origins = {"http://localhost:8000","http://192.168.1.10:8081","exp://192.168.0.186:8082","http://localhost:8082"}) 
 
 public class AuthController {
     @Autowired
