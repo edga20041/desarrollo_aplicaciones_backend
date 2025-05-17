@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/estados")
-@CrossOrigin(origins = "http://localhost:8000")
+@CrossOrigin(origins = "*")
 public class EstadoController {
     @Autowired
     private EstadoRepository estadoRepository;
@@ -26,7 +26,7 @@ public class EstadoController {
     }
 
     @GetMapping("/{estado_id}")
-    public EstadosResponse obtenerEstado(@PathVariable Long estado_id){
+    public EstadosResponse obtenerEstado(@PathVariable("estado_id") Long estado_id) {
         Estado estado = estadoRepository.findById(estado_id).orElse(null);
         return estado != null ? convertirAEstadosResponse(estado) : null;
     }

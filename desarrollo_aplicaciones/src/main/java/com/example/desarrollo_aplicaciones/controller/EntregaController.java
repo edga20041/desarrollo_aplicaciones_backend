@@ -24,7 +24,7 @@ import com.example.desarrollo_aplicaciones.helpers.NombreEstado;
 
 @RestController
 @RequestMapping("/entregas")
-@CrossOrigin(origins = "http://localhost:8000")
+@CrossOrigin(origins = "*")
 public class EntregaController {
 
     @Autowired
@@ -123,8 +123,8 @@ public class EntregaController {
     }
 
     @GetMapping("/{entrega_id}")
-    public EntregaResponse obtenerEntrega(@PathVariable Long entrega_id) {
-        Entrega entrega = entregaRepository.findById(entrega_id).orElse(null);
+    public EntregaResponse obtenerEntrega(@PathVariable("entrega_id") Long entregaId) {
+        Entrega entrega = entregaRepository.findById(entregaId).orElse(null);
         return entrega != null ? convertirAEntregaResponse(entrega) : null;
     }
 

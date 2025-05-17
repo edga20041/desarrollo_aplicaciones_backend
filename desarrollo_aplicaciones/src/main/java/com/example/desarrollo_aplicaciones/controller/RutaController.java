@@ -8,7 +8,7 @@ import com.example.desarrollo_aplicaciones.entity.Ruta;
 
 @RestController
 @RequestMapping("/rutas")
-@CrossOrigin(origins = "http://localhost:8000")
+@CrossOrigin(origins = "*")
 
 //GET PARTICULAR
 public class RutaController {
@@ -17,11 +17,10 @@ public class RutaController {
     private RutaRepository rutaRepository;
 
     @GetMapping("/{ruta_id}")
-    public RutaResponse obtenerRuta(@PathVariable Long ruta_id) {
+    public RutaResponse obtenerRuta(@PathVariable("ruta_id") Long ruta_id) {
         Ruta ruta = rutaRepository.findById(ruta_id).orElse(null);
         return ruta != null ? convertirARutaResponse(ruta) : null;
     }
-
     private RutaResponse convertirARutaResponse(Ruta ruta) {
         RutaResponse response = new RutaResponse();
         response.setId(ruta.getId());
