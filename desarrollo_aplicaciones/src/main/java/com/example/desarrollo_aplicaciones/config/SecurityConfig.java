@@ -45,6 +45,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
                     .requestMatchers(HttpMethod.PATCH, "/entregas/cambiar_estado").authenticated()
                     .requestMatchers(HttpMethod.GET, "/estados").authenticated()
                     .requestMatchers(HttpMethod.GET, "/estados/{estado_id}").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/api/qr/generate").authenticated()
                     .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
