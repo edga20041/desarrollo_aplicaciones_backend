@@ -14,4 +14,5 @@ public class EntregaResponse {
     private String producto;
     private Long repartidorId;
     private Long rutaId;
+    private String area;
 }

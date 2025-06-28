@@ -36,6 +36,9 @@ public class Entrega {
     @Column(name = "producto", nullable = false)
     private String producto;
 
+    @Column(name = "area", nullable = false)
+    private String area;
+
     @Column(name = "fecha_creacion", nullable = false, updatable = false)
     private LocalDateTime fechaCreacion;
 
