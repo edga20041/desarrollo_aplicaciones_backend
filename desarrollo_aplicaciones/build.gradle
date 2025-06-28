@@ -21,7 +21,7 @@ configurations {
 
 repositories {
 	mavenCentral()
-	maven { url 'https://jitpack.io' } 
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -38,8 +38,8 @@ dependencies {
 	implementation 'com.auth0:java-jwt:4.4.0'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'com.googlecode.libphonenumber:libphonenumber:8.13.40'
-	implementation 'net.glxn:qrgen:1.4'
-	implementation 'com.github.kenglxn.QRGen:javase:2.6.0'
+	implementation 'com.google.zxing:core:3.5.2'
+	implementation 'com.google.zxing:javase:3.5.2'
 }
 
 tasks.named('test') {

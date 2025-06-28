@@ -59,12 +59,11 @@ public class EntregaController {
         User user = userRepository.findByEmail(email).orElse(null);
         
         if (user != null && user.getRepartidorId() != null) {
-            List<Entrega> entregas = entregaRepository.findByRepartidorId(user.getRepartidorId());
+            List<Entrega> entregas = entregaRepository.findByRepartidorIdAndEstadoId(user.getRepartidorId(), 3L);
             
-            // Convertir las entregas a la respuesta que queremos devolver
             return entregas.stream().map(this::convertirAEntregaResponse).collect(Collectors.toList());
         } else {
-            return List.of(); // Retorna una lista vacía si no se encuentra el usuario o no tiene repartidorId
+            return List.of(); 
         }
     }
 
@@ -186,6 +185,25 @@ public class EntregaController {
         // (Opcional) eliminar el token usado
         entregaFinalizacionTokenRepository.delete(token);
         return cambiarEstadoEntregaResponse("Ok", "Entrega finalizada correctamente");
+    }
+
+    @GetMapping("/en-progreso")
+    public EntregaResponse obtenerEntregaEnProgreso() {
+        UserDetails userDetails = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String email = userDetails.getUsername();
+
+        User user = userRepository.findByEmail(email).orElse(null);
+        
+        if (user != null && user.getRepartidorId() != null) {
+            // Obtener la entrega en progreso (estadoId = 2) del repartidor
+            List<Entrega> entregasEnProgreso = entregaRepository.findByRepartidorIdAndEstadoId(user.getRepartidorId(), 2L);
+            
+            if (!entregasEnProgreso.isEmpty()) {
+                return convertirAEntregaResponse(entregasEnProgreso.get(0));
+            }
+        }
+        
+        return null; // No hay entrega en progreso
     }
 
     private EntregaResponse convertirAEntregaResponse(Entrega entrega) {

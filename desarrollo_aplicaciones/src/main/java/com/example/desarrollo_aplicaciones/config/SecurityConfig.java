@@ -41,6 +41,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
                     .requestMatchers(HttpMethod.GET, "/rutas/{ruta_id}").authenticated()
                     .requestMatchers(HttpMethod.GET, "/entregas/{entrega_id}").authenticated()
                     .requestMatchers(HttpMethod.GET, "/entregas/historial").authenticated()
+                    .requestMatchers(HttpMethod.GET, "/entregas/en-progreso").authenticated()
                     .requestMatchers(HttpMethod.GET, "/entregas/pendientes").authenticated()
                     .requestMatchers(HttpMethod.PATCH, "/entregas/cambiar_estado").authenticated()
                     .requestMatchers(HttpMethod.GET, "/estados").authenticated()
