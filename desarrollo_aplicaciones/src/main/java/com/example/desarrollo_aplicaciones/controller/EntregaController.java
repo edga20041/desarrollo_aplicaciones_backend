@@ -219,6 +219,7 @@ public class EntregaController {
         response.setRepartidorId(entrega.getRepartidorId());
         response.setRutaId(entrega.getRutaId());
         response.setProducto(entrega.getProducto());
+        response.setArea(entrega.getArea());
         return response;
     }
 

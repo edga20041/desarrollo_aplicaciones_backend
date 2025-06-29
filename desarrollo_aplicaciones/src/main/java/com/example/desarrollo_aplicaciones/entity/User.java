@@ -42,6 +42,9 @@ public class User {
     @Column(name = "repartidor_id")
     private Long repartidorId;
 
+    @Column(nullable = false)
+    private String area;
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

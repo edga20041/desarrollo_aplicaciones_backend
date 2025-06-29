@@ -249,7 +249,8 @@ public class AuthController {
                         user.getSurname(),
                         user.getEmail(),
                         user.getPhoneNumber(),
-                        user.getDni()
+                        user.getDni(),
+                        user.getArea()
                 );
                 return new ResponseEntity<>(userResponse, HttpStatus.OK);
             }
@@ -269,6 +270,7 @@ public class AuthController {
         user.setSurname(registerRequest.getSurname());
         user.setPhoneNumber(registerRequest.getPhoneNumber());
         user.setDni(registerRequest.getDni());
+        user.setArea(registerRequest.getArea());
         String encryptedPassword = passwordEncoder.encode(registerRequest.getPassword());
         user.setPassword(encryptedPassword);
         user.setEnabled(false);
@@ -347,5 +349,32 @@ public ResponseEntity<?> validateRecoveryCode(@RequestBody Map<String, String> p
         mailSender.send(message);
 
         return ResponseEntity.ok(Map.of("message", "Nuevo código de recuperación enviado."));
+    }
+
+    @PostMapping("/cambiar-area")
+    public ResponseEntity<?> cambiarArea(@RequestBody Map<String, String> body) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated()) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            String email = userDetails.getUsername();
+            String nuevaArea = body.get("area");
+
+            if (nuevaArea == null || nuevaArea.trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("message", "El área no puede estar vacía"));
+            }
+
+            Optional<User> userOptional = userRepository.findByEmail(email);
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                user.setArea(nuevaArea);
+                userRepository.save(user);
+                
+                return ResponseEntity.ok(Map.of(
+                    "message", "Área actualizada correctamente",
+                    "area", nuevaArea
+                ));
+            }
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Usuario no autenticado"));
     }
 }

@@ -7,6 +7,7 @@ public class RegisterRequest {
     private String surname;
     private String phoneNumber;
     private Integer dni;
+    private String area;
 
     public String getEmail() {
         return email;
@@ -54,5 +55,13 @@ public class RegisterRequest {
 
     public void setDni(Integer dni) {
         this.dni = dni;
+    }
+
+    public String getArea() {
+        return area;
+    }
+
+    public void setArea(String area) {
+        this.area = area;
     }
 }
