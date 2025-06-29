@@ -1,5 +1,6 @@
 package com.example.desarrollo_aplicaciones.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +15,5 @@ public interface EntregaRepository extends JpaRepository<Entrega, Long> {
     List<Entrega> findByRepartidorIdAndEstadoIdIn(Long repartidorId, List<Long> estadoIds);
     List<Entrega> findByEstadoId(Long estadoId);
     List<Entrega> findByEstadoIdAndRepartidorIdNull(Long estadoId);
+    int countByFechaCreacionAfter(LocalDateTime since);
 }

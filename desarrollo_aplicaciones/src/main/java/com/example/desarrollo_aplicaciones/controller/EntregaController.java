@@ -1,7 +1,6 @@
 package com.example.desarrollo_aplicaciones.controller;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,7 +24,6 @@ import com.example.desarrollo_aplicaciones.helpers.NombreEstado;
 import com.example.desarrollo_aplicaciones.service.EntregaFinalizacionService;
 import com.example.desarrollo_aplicaciones.entity.EntregaFinalizacionToken;
 import com.example.desarrollo_aplicaciones.repository.EntregaFinalizacionTokenRepository;
-import org.springframework.http.ResponseEntity;
 import com.example.desarrollo_aplicaciones.api.model.VerificarCodigoRequest;
 
 @RestController
