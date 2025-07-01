@@ -72,6 +72,11 @@ public class AuthController {
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
+            if (!user.isEnabled()) {
+                // Usuario no verificado
+                AuthResponse response = new AuthResponse(null, null, null, "Debes verificar tu correo antes de iniciar sesión.");
+                return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+            }
             if (passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
                 String jwtToken = jwtUtil.generateToken(user.getEmail());
                 AuthResponse response = new AuthResponse(jwtToken, user.getId(), user.getName());
